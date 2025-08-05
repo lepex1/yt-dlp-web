@@ -17,13 +17,29 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'yt-dlp-'));
+        console.log('Starting download process...');
+        console.log('URL:', url);
+        console.log('Quality:', quality);
+        console.log('No Audio:', noAudio);
         
-        // Пути к бинарникам (относительно расположения файла)
-        const __dirname = path.dirname(new URL(import.meta.url).pathname;
-        const baseDir = path.join(__dirname, '..', 'yt-dlp');
+        const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'yt-dlp-'));
+        console.log('Temporary directory:', tempDir);
+        
+        // Пути к бинарникам
+        const baseDir = path.join(__dirname, '../yt-dlp');
         const ytDlpPath = path.join(baseDir, 'yt-dlp.exe');
         const ffmpegPath = path.join(baseDir, 'ffmpeg.exe');
+        
+        console.log('yt-dlp Path:', ytDlpPath);
+        console.log('ffmpeg Path:', ffmpegPath);
+        
+        // Проверка существования бинарников
+        if (!fs.existsSync(ytDlpPath)) {
+            throw new Error(`yt-dlp.exe not found at ${ytDlpPath}`);
+        }
+        if (!fs.existsSync(ffmpegPath)) {
+            throw new Error(`ffmpeg.exe not found at ${ffmpegPath}`);
+        }
         
         // Формируем параметры
         let format = '';
@@ -35,43 +51,54 @@ module.exports = async (req, res) => {
 
         const outputTemplate = path.join(tempDir, '%(title)s.%(ext)s');
         
-        // Команда с использованием локальных бинарников
+        // Команда для выполнения
         const command = `"${ytDlpPath}" -f "${format}" --ffmpeg-location "${path.dirname(ffmpegPath)}" --remux-video mp4 -o "${outputTemplate}" "${url}"`;
-
+        console.log('Executing command:', command);
+        
         // Запускаем yt-dlp
-        await execAsync(command, { timeout: 300000 });
+        const { stdout, stderr } = await execAsync(command, { timeout: 300000 });
+        console.log('stdout:', stdout);
+        console.error('stderr:', stderr);
 
-        // Поиск скачанного файла
+        // Ищем скачанный файл
         const files = fs.readdirSync(tempDir);
         if (files.length === 0) {
-            throw new Error('Файл не найден после скачивания');
+            throw new Error('No files downloaded');
         }
 
         const videoPath = path.join(tempDir, files[0]);
-        const videoStream = fs.createReadStream(videoPath);
-
-        // Определяем MIME-тип
-        const ext = path.extname(videoPath).toLowerCase();
-        const mimeTypes = {
-            '.mp4': 'video/mp4',
-            '.mkv': 'video/x-matroska',
-            '.webm': 'video/webm',
-            '.avi': 'video/x-msvideo'
-        };
-
-        res.setHeader('Content-Type', mimeTypes[ext] || 'application/octet-stream');
-        res.setHeader('Content-Disposition', `attachment; filename="${files[0]}"`);
+        console.log('Video path:', videoPath);
         
-        videoStream.pipe(res);
+        // Проверяем размер файла
+        const stats = fs.statSync(videoPath);
+        const fileSize = stats.size;
+        console.log('File size:', fileSize, 'bytes');
+        
+        if (fileSize > 50 * 1024 * 1024) {
+            throw new Error('File size exceeds Vercel limit (50MB)');
+        }
 
-        // Удаление временных файлов после отправки
+        // Отправляем видео
+        res.setHeader('Content-Type', 'video/mp4');
+        res.setHeader('Content-Disposition', `attachment; filename="${files[0]}"`);
+        res.setHeader('Content-Length', fileSize);
+        
+        const videoStream = fs.createReadStream(videoPath);
+        videoStream.pipe(res);
+        
+        // Удаляем файл после отправки
         videoStream.on('end', () => {
-            fs.rmSync(tempDir, { recursive: true, force: true });
+            try {
+                fs.unlinkSync(videoPath);
+                fs.rmdirSync(tempDir);
+                console.log('Temporary files cleaned up');
+            } catch (cleanupError) {
+                console.error('Cleanup error:', cleanupError);
+            }
         });
 
     } catch (error) {
-        console.error('Ошибка:', error);
+        console.error('Error:', error);
         res.status(500).send(error.message);
     }
-
 };
