@@ -20,7 +20,7 @@
       "dest": "/public/$1"
     },
     {
-      "src": "/api/download",
+      "src": "/api/download.js",
       "dest": "/api/download.js",
       "methods": ["POST"]
     },
