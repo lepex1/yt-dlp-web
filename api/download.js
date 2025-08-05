@@ -19,9 +19,11 @@ module.exports = async (req, res) => {
     try {
         const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'yt-dlp-'));
         
-        // Пути к бинарникам
-        const ytDlpPath = path.join(__dirname, '../../yt-dlp/yt-dlp.exe');
-        const ffmpegPath = path.join(__dirname, '../../yt-dlp/ffmpeg.exe');
+        // Пути к бинарникам (относительно расположения файла)
+        const __dirname = path.dirname(new URL(import.meta.url).pathname;
+        const baseDir = path.join(__dirname, '..', 'yt-dlp');
+        const ytDlpPath = path.join(baseDir, 'yt-dlp.exe');
+        const ffmpegPath = path.join(baseDir, 'ffmpeg.exe');
         
         // Формируем параметры
         let format = '';
@@ -71,4 +73,5 @@ module.exports = async (req, res) => {
         console.error('Ошибка:', error);
         res.status(500).send(error.message);
     }
+
 };
