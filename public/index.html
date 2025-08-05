@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>yt-dlp Web Downloader</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>YT-DLP Video Downloader</h1>
+        </header>
+        
+        <main>
+            <form id="download-form">
+                <div class="input-group">
+                    <label for="video-url">Ссылка на видео:</label>
+                    <input 
+                        type="url" 
+                        id="video-url" 
+                        placeholder="https://www.youtube.com/watch?v=..." 
+                        required
+                    >
+                </div>
+                
+                <div class="input-group">
+                    <label>Пресеты качества:</label>
+                    <div class="radio-group">
+                        <label>
+                            <input type="radio" name="quality" value="best" checked>
+                            Лучшее качество (аудио+видео)
+                        </label>
+                        <label>
+                            <input type="radio" name="quality" value="worst">
+                            Худшее качество (аудио+видео)
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="no-audio">
+                        <span class="checkmark"></span>
+                        Скачать без звука
+                    </label>
+                </div>
+                
+                <button type="submit">Скачать видео</button>
+            </form>
+            
+            <div id="status-message"></div>
+        </main>
+        
+        <footer>
+            <p>yt-dlp web interface © 2023</p>
+        </footer>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
