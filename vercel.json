@@ -1,8 +1,13 @@
 {
+  "version": 2,
   "builds": [
     {
       "src": "api/download.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -11,8 +16,17 @@
       "dest": "/public/index.html"
     },
     {
-      "src": "/(.*)",
+      "src": "/(.*\\.(css|js|html))",
       "dest": "/public/$1"
+    },
+    {
+      "src": "/api/download",
+      "dest": "/api/download.js",
+      "methods": ["POST"]
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/index.html"
     }
   ]
 }
