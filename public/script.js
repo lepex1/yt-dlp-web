@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         statusMessage.style.color = '#353839';
         
         try {
-            const response = await fetch('/api/download', {
+            const response = await fetch('/api/download.js', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -54,4 +54,5 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Download error:', error);
         }
     });
+
 });
