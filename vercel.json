@@ -3,7 +3,12 @@
   "builds": [
     {
       "src": "api/download.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": [
+          "yt-dlp/**"
+        ]
+      }
     },
     {
       "src": "public/**",
@@ -16,13 +21,13 @@
       "dest": "/public/index.html"
     },
     {
-      "src": "/(.*\\.(css|js|html))",
-      "dest": "/public/$1"
-    },
-    {
       "src": "/api/download.js",
       "dest": "/api/download.js",
       "methods": ["POST"]
+    },
+    {
+      "src": "/(.*\\.(css|js|html))",
+      "dest": "/public/$1"
     },
     {
       "src": "/(.*)",
