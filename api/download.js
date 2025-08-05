@@ -25,8 +25,8 @@ module.exports = async (req, res) => {
         const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'yt-dlp-'));
         console.log('Temporary directory:', tempDir);
         
-        // Пути к бинарникам
-        const baseDir = path.join(__dirname, '../yt-dlp');
+        // ИСПРАВЛЕННЫЕ ПУТИ - теперь правильные
+        const baseDir = path.join(__dirname, '..', 'yt-dlp');
         const ytDlpPath = path.join(baseDir, 'yt-dlp.exe');
         const ffmpegPath = path.join(baseDir, 'ffmpeg.exe');
         
