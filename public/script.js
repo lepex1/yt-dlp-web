@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const noAudio = document.getElementById('no-audio').checked;
         
         statusMessage.textContent = 'Обработка запроса...';
-        statusMessage.style.color = '#353839';
+        statusMessage.style.color = '#FFD700';
         
         try {
             const response = await fetch('/api/download.js', {
@@ -54,5 +54,4 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Download error:', error);
         }
     });
-
 });
