@@ -4,6 +4,10 @@ const execAsync = promisify(exec);
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const https = require('https');
+const { pipeline } = require('stream');
+const { promisify: p } = require('util');
+const pipelineAsync = p(pipeline);
 
 module.exports = async (req, res) => {
     if (req.method !== 'POST') {
@@ -25,6 +29,24 @@ module.exports = async (req, res) => {
         const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'yt-dlp-'));
         console.log('Temporary directory:', tempDir);
         
+        // Скачиваем yt-dlp бинарник
+        const ytDlpPath = path.join(tempDir, 'yt-dlp');
+        if (!fs.existsSync(ytDlpPath)) {
+            console.log('Downloading yt-dlp binary...');
+            const file = fs.createWriteStream(ytDlpPath);
+            const response = await new Promise((resolve, reject) => {
+                https.get('https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_linux', res => {
+                    resolve(res);
+                }).on('error', reject);
+            });
+            
+            await pipelineAsync(response, file);
+            
+            // Делаем файл исполняемым
+            fs.chmodSync(ytDlpPath, 0o755);
+            console.log('yt-dlp binary downloaded and made executable');
+        }
+        
         // Формируем параметры
         let format = '';
         if (noAudio) {
@@ -35,16 +57,8 @@ module.exports = async (req, res) => {
 
         const outputTemplate = path.join(tempDir, '%(title)s.%(ext)s');
         
-        // Устанавливаем yt-dlp перед использованием
-        console.log('Installing yt-dlp...');
-        await execAsync('pip install yt-dlp', { timeout: 60000 });
-        
-        // Проверяем установку
-        const { stdout: version } = await execAsync('yt-dlp --version');
-        console.log('yt-dlp version:', version);
-        
         // Команда для выполнения
-        const command = `yt-dlp -f "${format}" -o "${outputTemplate}" "${url}"`;
+        const command = `"${ytDlpPath}" -f "${format}" -o "${outputTemplate}" "${url}"`;
         console.log('Executing command:', command);
         
         // Запускаем yt-dlp
@@ -53,7 +67,7 @@ module.exports = async (req, res) => {
         console.error('stderr:', stderr);
 
         // Ищем скачанный файл
-        const files = fs.readdirSync(tempDir);
+        const files = fs.readdirSync(tempDir).filter(f => f !== 'yt-dlp');
         if (files.length === 0) {
             throw new Error('No files downloaded');
         }
@@ -93,7 +107,7 @@ module.exports = async (req, res) => {
         videoStream.on('end', () => {
             try {
                 fs.unlinkSync(videoPath);
-                fs.rmdirSync(tempDir);
+                fs.rmSync(tempDir, { recursive: true, force: true });
                 console.log('Temporary files cleaned up');
             } catch (cleanupError) {
                 console.error('Cleanup error:', cleanupError);
