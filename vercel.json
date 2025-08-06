@@ -3,10 +3,7 @@
   "builds": [
     {
       "src": "api/download.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": []
-      }
+      "use": "@vercel/node"
     },
     {
       "src": "public/**",
