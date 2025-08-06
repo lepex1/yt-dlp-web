@@ -2,8 +2,7 @@
   "name": "yt-dlp-web",
   "version": "1.0.0",
   "scripts": {
-    "start": "node server.js",
-    "postinstall": "pip install yt-dlp"
+    "start": "node server.js"
   },
   "dependencies": {
     "child_process": "^1.0.2",
