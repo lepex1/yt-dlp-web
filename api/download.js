@@ -25,29 +25,19 @@ module.exports = async (req, res) => {
         const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'yt-dlp-'));
         console.log('Temporary directory:', tempDir);
         
-        // Путь к yt-dlp.exe
-        const baseDir = path.join(__dirname, '..', 'yt-dlp');
-        const ytDlpPath = path.join(baseDir, 'yt-dlp.exe');
-        console.log('yt-dlp Path:', ytDlpPath);
-        
-        // Проверка существования yt-dlp.exe
-        if (!fs.existsSync(ytDlpPath)) {
-            throw new Error(`yt-dlp.exe not found at ${ytDlpPath}`);
-        }
-        
-        // Формируем параметры (без использования ffmpeg)
+        // Формируем параметры
         let format = '';
         if (noAudio) {
-            format = quality === 'best' ? 'bestvideo[ext=mp4]/bestvideo' : 'worstvideo[ext=mp4]/worstvideo';
+            format = quality === 'best' ? 'bestvideo[ext=mp4]' : 'worstvideo[ext=mp4]';
         } else {
-            format = quality === 'best' ? 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]' : 
-                                        'worstvideo[ext=mp4]+worstaudio[ext=m4a]/worst[ext=mp4]';
+            format = quality === 'best' ? 'best[ext=mp4]/bestvideo[ext=mp4]+bestaudio[ext=m4a]' : 
+                                        'worst[ext=mp4]/worstvideo[ext=mp4]+worstaudio[ext=m4a]';
         }
 
         const outputTemplate = path.join(tempDir, '%(title)s.%(ext)s');
         
-        // Команда для выполнения (без ffmpeg)
-        const command = `"${ytDlpPath}" -f "${format}" -o "${outputTemplate}" "${url}"`;
+        // Команда для выполнения (используем системный yt-dlp)
+        const command = `yt-dlp -f "${format}" -o "${outputTemplate}" "${url}"`;
         console.log('Executing command:', command);
         
         // Запускаем yt-dlp
