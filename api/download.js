@@ -30,13 +30,20 @@ module.exports = async (req, res) => {
         if (noAudio) {
             format = quality === 'best' ? 'bestvideo[ext=mp4]' : 'worstvideo[ext=mp4]';
         } else {
-            format = quality === 'best' ? 'best[ext=mp4]/bestvideo[ext=mp4]+bestaudio[ext=m4a]' : 
-                                        'worst[ext=mp4]/worstvideo[ext=mp4]+worstaudio[ext=m4a]';
+            format = quality === 'best' ? 'best[ext=mp4]' : 'worst[ext=mp4]';
         }
 
         const outputTemplate = path.join(tempDir, '%(title)s.%(ext)s');
         
-        // Команда для выполнения (используем системный yt-dlp)
+        // Устанавливаем yt-dlp перед использованием
+        console.log('Installing yt-dlp...');
+        await execAsync('pip install yt-dlp', { timeout: 60000 });
+        
+        // Проверяем установку
+        const { stdout: version } = await execAsync('yt-dlp --version');
+        console.log('yt-dlp version:', version);
+        
+        // Команда для выполнения
         const command = `yt-dlp -f "${format}" -o "${outputTemplate}" "${url}"`;
         console.log('Executing command:', command);
         
